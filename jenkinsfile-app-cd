@@ -91,6 +91,7 @@ pipeline {
             }
         }
         stage('Input: Upgrade or Rollback') {
+
             steps {
                 script {
                     // Ask the user for input (Deploy or Rollback)
@@ -104,7 +105,8 @@ pipeline {
                     )
 
                     // Store the user's choice for later use
-                    env.ACTION = userInput.ACTION
+                    // env.ACTION = userInput.ACTION
+                    
                 }
             }
         }
