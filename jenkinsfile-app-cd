@@ -33,7 +33,7 @@ pipeline {
                     
                     // Deploy the Helm chart with the provided parameters
                     sh """
-                    helm upgrade --install ${params.NEW_RELEASE_NAME}-v${params.TAG} \
+                    helm upgrade --install ${params.NEW_RELEASE_NAME} \
                                  ${params.CHART_PATH} \
                                  --namespace ${params.NAMESPACE} \
                                  --set image.tag=${params.TAG} \
