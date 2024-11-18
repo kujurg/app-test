@@ -4,6 +4,7 @@ pipeline {
     parameters {
         string(name: 'TAG', , defaultValue: '1.0.0', description: 'please enter the tag in following format 1.0.0')
         string(name: 'NEW_RELEASE_NAME', defaultValue: 'webapp', description: 'Helm release name')
+        string(name: 'OLD_RELEASE_NAME', defaultValue: 'webapp', description: 'Helm release name')
         booleanParam(name: 'INITIAL',defaultValue: false, description: 'Is this intial deployment')
         string(name: 'CHART_PATH', defaultValue: './webapp_chart', description: 'Path or name of Helm chart')
         string(name: 'NAMESPACE', defaultValue: 'default', description: 'Kubernetes namespace')
@@ -22,16 +23,6 @@ pipeline {
             }
         }
                      
-        stage('check if initial Deployment') {
-            when {
-                expression { params.INITIAL == false }
-            }
-            steps {
-                script {
-                    sh 'helm list | grep webapp-v | awk "{print $1}" > old_revision'
-                }
-            }
-        }
 
         stage('Deploy Helm Chart') {
             steps {
@@ -128,9 +119,8 @@ pipeline {
                  }
             steps {
                 script {
-                    def revision = sh(script: 'cat old_revision', returnStdout: true).trim()
                       sh """
-                      helm uninstall $revision
+                      helm uninstall $OLD_RELEASE_NAME
                     """
                 }
             }
