@@ -1,15 +1,6 @@
-# data "google_compute_network" "my-network" {
-#   name = var.base_vpc_network
-# }
-
-# data "google_compute_subnetwork" "my-subnetwork" {
-#   name   = var.base_vpv_subnetwork
-#   region = var.region
-# }
-
 resource "google_container_cluster" "webapp" {
   name = var.cluster_name
-  location = "$(var.region)-a"
+  location = "${var.region}-a"
 
   remove_default_node_pool = true
   initial_node_count = 1
