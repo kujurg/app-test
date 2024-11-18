@@ -1,0 +1,73 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'APP_VERSION', defaultValue: 'latest', description: 'Tag for the Application image')
+    }
+
+    environment {
+        DOCKER_IMAGE = "backend"  // Replace with your Docker image name
+        ARTIFIACT = "us-central1-docker.pkg.dev"
+        IMAGE_REGISTRY = "webapp"    // Optional: If you are pushing to a registry (e.g., DockerHub or private registry)
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout the repository (ensure Dockerfile exists in the root or specify path)
+                checkout scm
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+
+                    dir(WORKING_DIR) {
+
+                        // Building the Docker image from the Dockerfile
+                    sh '''
+                    docker build -t ${DOCKER_IMAGE}:${APP_VERSION} -f ./docker/Dockerfile .
+                    '''
+                    }
+                }
+            }
+        }
+
+        stage('Test Docker Image') {
+            steps {
+                script {
+                    // Optionally run tests to verify the built Docker image works
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    // Login to Docker registry (replace with your credentials or use Jenkins' credentials)
+                    sh "gcloud auth configure-docker ${ARTIFIACT}"
+
+                    // Tagging and pushing the Docker image
+                    sh "docker tag ${DOCKER_IMAGE}:${APP_VERSION} ${ARTIFIACT}/${IMAGE_REGISTRY}/${DOCKER_IMAGE}:${APP_VERSION}"
+                    sh "docker push ${ARTIFIACT}/${IMAGE_REGISTRY}/${DOCKER_IMAGE}:${APP_VERSION}"
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                // Cleanup the local Docker image after the build
+                sh "docker rmi ${DOCKER_IMAGE}:${APP_VERSION} || true"
+            }
+        }
+        success {
+            echo 'Docker image build and push succeeded!'
+        }
+        failure {
+            echo 'Docker image build or push failed!'
+        }
+    }
+}
