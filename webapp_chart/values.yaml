@@ -1,0 +1,8 @@
+
+replicaCount: 1
+
+image:
+  repository: us-central1-docker.pkg.dev/deeplearning-390607/webapp/app
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
