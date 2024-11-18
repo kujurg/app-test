@@ -28,7 +28,7 @@ pipeline {
             }
             steps {
                 script {
-                    sh 'helm list | grep webapp-v | awk {print $1} > old_revision'
+                    sh 'helm list | grep webapp-v | awk '{print $1}' > old_revision'
                 }
             }
         }
