@@ -9,7 +9,7 @@ pipeline {
 
     environment {
         // Location of terraform directory
-        TF_WORKING_DIR = './terraform/gke_infra'
+        TF_WORKING_DIR = './terraform/app_infra'
     }
 
     stages {
