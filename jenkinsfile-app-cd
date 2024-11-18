@@ -28,7 +28,9 @@ pipeline {
             }
             steps {
                 script {
-                    sh "helm status webapp | grep "NAME:" | cut -d " " -f2 > old_revision"
+                    sh """
+                    helm status webapp | grep 'NAME:' | cut -d " " -f2 > old_revision
+                    """
                 }
             }
         }
