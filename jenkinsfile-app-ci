@@ -25,7 +25,7 @@ pipeline {
                 script {
                         // Building the Docker image from the Dockerfile
                     sh '''
-                    docker build -t ${ARTIFIACT}/${IMAGE_REGISTRY}/${IMAGE_NAME}:${APP_VERSION} -f ./docker/Dockerfile .
+                    docker build -t ${ARTIFIACT}/${PROJECT_ID}/${IMAGE_REGISTRY}/${IMAGE_NAME}:${APP_VERSION} -f ./docker/Dockerfile .
                     '''
                 }
             }
@@ -46,7 +46,7 @@ pipeline {
                     sh "gcloud auth configure-docker ${ARTIFIACT}"
 
                     // Tagging and pushing the Docker image
-                    sh "docker push ${ARTIFIACT}/${IMAGE_REGISTRY}/${IMAGE_NAME}:${APP_VERSION}"
+                    sh "docker push ${ARTIFIACT}/${PROJECT_ID}/${IMAGE_REGISTRY}/${IMAGE_NAME}:${APP_VERSION}"
                 }
             }
         }
@@ -56,7 +56,7 @@ pipeline {
         always {
             script {
                 // Cleanup the local Docker image after the build
-                sh "docker rmi ${ARTIFIACT}/${IMAGE_REGISTRY}/${IMAGE_NAME}:${APP_VERSION} || true"
+                sh "docker rmi ${ARTIFIACT}/${PROJECT_ID}/${IMAGE_REGISTRY}/${IMAGE_NAME}:${APP_VERSION} || true"
             }
         }
         success {
