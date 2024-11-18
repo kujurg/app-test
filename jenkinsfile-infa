@@ -56,7 +56,7 @@ pipeline {
                 script {
                     // Run Terraform Apply
                     dir(TF_WORKING_DIR) {
-                        sh "terraform plan -var-file=test.tfvars -auto-approve"
+                        sh "terraform apply -var-file=test.tfvars -auto-approve"
                     }
                 }
             }
