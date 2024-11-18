@@ -6,6 +6,7 @@ pipeline {
     }
 
     environment {
+        PROJECT_ID = "deeplearning-390607"
         ARTIFIACT = "us-central1-docker.pkg.dev"
         IMAGE_REGISTRY = "webapp"    // Optional: If you are pushing to a registry (e.g., DockerHub or private registry)
         IMAGE_NAME = "app"
