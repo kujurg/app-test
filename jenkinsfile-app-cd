@@ -12,7 +12,7 @@ pipeline {
 
     stages {
 
-        stage('Connection to the cluster') {
+        stage('Establish connection to the cluster') {
             steps {
                 sh 'gcloud container clusters get-credentials webapp --zone us-central1-a --project deeplearning-390607'
             }
@@ -66,16 +66,31 @@ pipeline {
             }
         }
 
-        // stage(' Test the green deployment') {
-        //     steps {
-        //         script {
-        //               sh """
-        //                kubectl exec nginx-interactive -- curl --silent --show-error --fail green
+        stage(' Test the green deployment') {
+            steps {
+                script {
+                    sh """
+                        sleep 5
+                        kubectl exec svc/green -- curl --silent --show-error --fail localhost:5000
+                    """
+                }
+            }
+        }
 
-        //             """
-        //         }
-        //     }
-        // }
+        stage(' Create the blue deployment') {
+             when {
+                expression { params.INITIAL == true }
+                 }
+            steps {
+                script {
+                      sh """
+                        kubectl apply -f ./webapp_chart/blue.yaml
+                        sleep 5
+                    """
+                }
+            }
+        }
+
 
         stage(' Path the blue deployment') {
              when {
@@ -91,16 +106,16 @@ pipeline {
             }
         }
 
-        //  stage(' Test the blue deployment') {
-        //     steps {
-        //         script {
-        //               sh """
-        //              kubectl exec nginx-interactive -- curl --silent --show-error --fail live
+         stage(' Test the blue deployment') {
+            steps {
+                script {
+                      sh """
+                     kubectl exec svc/blue -- curl --silent --show-error --fail localhost:5000
 
-        //             """
-        //         }
-        //     }
-        // }
+                    """
+                }
+            }
+        }
 
             stage('Patch the green deployment back') {
             steps {
