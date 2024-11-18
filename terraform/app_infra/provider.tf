@@ -6,7 +6,7 @@ terraform {
     }
   }
   backend "gcs" {
-    bucket = "deeplearing-terraform"
+    bucket = "deeplearning-terraform-state"
     prefix = "testenv/state"
   }
 }
