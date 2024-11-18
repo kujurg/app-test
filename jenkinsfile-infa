@@ -10,6 +10,7 @@ pipeline {
     environment {
         // Location of terraform directory
         TF_WORKING_DIR = './terraform/app_infra'
+        TF_VALUES = credentials('test')
     }
 
     stages {
@@ -42,7 +43,7 @@ pipeline {
                 script {
                     // Run Terraform Plan
                     dir(TF_WORKING_DIR) {
-                        sh 'terraform plan --var-file=test.tfvars'
+                        sh "terraform plan --var-file=${TF_VALUES}"
                     }
                 }
             }
@@ -56,7 +57,7 @@ pipeline {
                 script {
                     // Run Terraform Apply
                     dir(TF_WORKING_DIR) {
-                        sh 'terraform plan --var-file=test.tfvars -auto-approve'
+                        sh "terraform plan --var-file=${TF_VALUES} -auto-approve"
                     }
                 }
             }
@@ -70,7 +71,7 @@ pipeline {
                 script {
                     // Run Terraform Destroy
                     dir(TF_WORKING_DIR) {
-                        sh 'terraform destroy --var-file=test.tfvars -auto-approve'
+                        sh "terraform destroy --var-file=${TF_VALUES} -auto-approve"
                     }
                 }
             }
