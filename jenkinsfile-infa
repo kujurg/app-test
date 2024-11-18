@@ -1,0 +1,91 @@
+pipeline {
+    agent any
+
+    parameters {
+        choice(name: 'TERRAFORM_ACTION', 
+               choices: ['plan', 'apply', 'destroy'], 
+               description: 'Choose terraform action to perform')
+    }
+
+    environment {
+        // Location of terraform directory
+        TF_WORKING_DIR = './terraform/gke_infra'
+    }
+
+    stages {
+        stage('Initialize') {
+            steps {
+                script {
+                    // Initialize Terraform (this is needed before any plan/apply/destroy)
+                    dir(TF_WORKING_DIR) {
+                        sh 'terraform init'
+                    }
+                }
+            }
+        }
+
+        stage('Validate') {
+            steps {
+                script {
+                    // Validate Terraform configuration
+                    dir(TF_WORKING_DIR) {
+                        sh 'terraform validate'
+                    }
+                }
+            }
+        }
+        stage('Plan') {
+            when {
+                expression { params.TERRAFORM_ACTION == 'plan' }
+            }
+            steps {
+                script {
+                    // Run Terraform Plan
+                    dir(TF_WORKING_DIR) {
+                        sh 'terraform plan --var-file=test.tfvars'
+                    }
+                }
+            }
+        }
+
+        stage('Apply') {
+            when {
+                expression { params.TERRAFORM_ACTION == 'apply' }
+            }
+            steps {
+                script {
+                    // Run Terraform Apply
+                    dir(TF_WORKING_DIR) {
+                        sh 'terraform plan --var-file=test.tfvars -auto-approve'
+                    }
+                }
+            }
+        }
+
+        stage('Destroy') {
+            when {
+                expression { params.TERRAFORM_ACTION == 'destroy' }
+            }
+            steps {
+                script {
+                    // Run Terraform Destroy
+                    dir(TF_WORKING_DIR) {
+                        sh 'terraform destroy --var-file=test.tfvars -auto-approve'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Terraform '${params.TERRAFORM_ACTION}' completed."
+        }
+        success {
+            echo 'Operation succeeded!'
+        }
+        failure {
+            echo 'Operation failed!'
+        }
+    }
+}
