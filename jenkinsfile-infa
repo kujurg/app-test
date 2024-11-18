@@ -20,6 +20,8 @@ pipeline {
                     // Initialize Terraform (this is needed before any plan/apply/destroy)
                     dir(TF_WORKING_DIR) {
                         sh 'terraform init'
+                        sh "cp ${TF_VALUES} ${TF_WORKING_DIR}/test.tfvars"
+                        sh "ls"
                     }
                 }
             }
@@ -30,7 +32,7 @@ pipeline {
                 script {
                     // Validate Terraform configuration
                     dir(TF_WORKING_DIR) {
-                        sh 'terraform validate --var-file=${TF_VALUES}'
+                        sh 'terraform validate -var-file=${TF_VALUES}'
                     }
                 }
             }
@@ -43,7 +45,7 @@ pipeline {
                 script {
                     // Run Terraform Plan
                     dir(TF_WORKING_DIR) {
-                        sh "terraform plan --var-file=${TF_VALUES}"
+                        sh "terraform plan -var-file=${TF_VALUES}"
                     }
                 }
             }
@@ -57,7 +59,7 @@ pipeline {
                 script {
                     // Run Terraform Apply
                     dir(TF_WORKING_DIR) {
-                        sh "terraform plan --var-file=${TF_VALUES} -auto-approve"
+                        sh "terraform plan -var-file=${TF_VALUES} -auto-approve"
                     }
                 }
             }
@@ -71,7 +73,7 @@ pipeline {
                 script {
                     // Run Terraform Destroy
                     dir(TF_WORKING_DIR) {
-                        sh "terraform destroy --var-file=${TF_VALUES} -auto-approve"
+                        sh "terraform destroy -var-file=${TF_VALUES} -auto-approve"
                     }
                 }
             }
