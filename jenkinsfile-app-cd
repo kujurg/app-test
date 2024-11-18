@@ -69,12 +69,11 @@ pipeline {
         stage(' Test the green deployment') {
             steps {
                 script {
-                    for (int i = 1; i <= 5; i++) {
                     sh """
                     kubectl exec svc/green -- curl --silent --show-error --fail localhost:5000
-                    sleep 1  
+                    echo "Testing the green deployment using curl command:"
+                    sleep 5 
                     """
-                    }
                 }
             }
         }
@@ -111,12 +110,11 @@ pipeline {
          stage(' Test the blue deployment') {
             steps {
                 script {
-                    for (int i = 1; i <= 5; i++) {
                     sh """
                         kubectl exec svc/blue -- curl --silent --show-error --fail localhost:5000
+                        echo "Testing the blue deployment using curl command:"
                         sleep 1
                     """
-                    }
                 }
             }
         }
