@@ -1,6 +1,6 @@
 resource "google_container_node_pool" "primary_nodepool" {
   name = "primary"
-  location = "$(var.region)-a"
+  location = "${var.region}-a"
   cluster = google_container_cluster.webapp.name
   node_count = var.primary_node_count
 

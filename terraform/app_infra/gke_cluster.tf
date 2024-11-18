@@ -4,6 +4,7 @@ resource "google_container_cluster" "webapp" {
 
   remove_default_node_pool = true
   initial_node_count = 1
+  deletion_protection = false
 
   node_config {
     machine_type = var.primary_nodepool_machine_type
