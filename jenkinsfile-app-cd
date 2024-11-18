@@ -130,8 +130,9 @@ pipeline {
                  }
             steps {
                 script {
+                    def revision = sh(script: 'cat old_revision', returnStdout: true).trim()
                       sh """
-                      helm uninstall $(echo old_revision)
+                      helm uninstall $revision
                     """
                 }
             }
