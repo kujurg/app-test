@@ -32,6 +32,6 @@ resource "google_container_cluster" "webapp" {
     master_ipv4_cidr_block = "10.13.0.0/28"
   }
 
-  network = google_compute_network.my-network.name
-  subnetwork = google_compute_network.my-subnetwork.name
+  network = data.google_compute_network.my-network.name
+  subnetwork = data.google_compute_network.my-subnetwork.name
 }
