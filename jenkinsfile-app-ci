@@ -22,12 +22,10 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    dir(WORKING_DIR) {
                         // Building the Docker image from the Dockerfile
                     sh '''
                     docker build -t ${DOCKER_IMAGE}:${APP_VERSION} -f ./docker/Dockerfile .
                     '''
-                    }
                 }
             }
         }
