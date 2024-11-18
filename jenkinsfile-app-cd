@@ -29,7 +29,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    helm status webapp | grep 'NAME:' | cut -d " " -f2 > old_revision
+                    helm status ${params.RELEASE_NAME}-${params.TAG} | grep 'NAME:' | cut -d " " -f2 > old_revision
                     """
                 }
             }
