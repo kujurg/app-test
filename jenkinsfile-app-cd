@@ -3,7 +3,7 @@ pipeline {
 
     parameters {
         string(name: 'TAG', , defaultValue: '1.0.0', description: 'please enter the tag in following format 1.0.0')
-        string(name: 'RELEASE_NAME', defaultValue: 'webapp', description: 'Helm release name')
+        string(name: 'NEW_RELEASE_NAME', defaultValue: 'webapp', description: 'Helm release name')
         booleanParam(name: 'INITIAL',defaultValue: false, description: 'Is this intial deployment')
         string(name: 'CHART_PATH', defaultValue: './webapp_chart', description: 'Path or name of Helm chart')
         string(name: 'NAMESPACE', defaultValue: 'default', description: 'Kubernetes namespace')
@@ -29,7 +29,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    helm status ${params.RELEASE_NAME}-v | grep 'NAME:' | cut -d " " -f2 > old_revision
+                    helm list | grep 'webapp-v' | awk '{print $1}' > old_revision
                     """
                 }
             }
@@ -39,12 +39,12 @@ pipeline {
             steps {
                 script {
                     echo "Deploying Helm chart: ${params.CHART_PATH}"
-                    echo "Using release name: ${params.RELEASE_NAME}"
+                    echo "Using release name: ${params.NEW_RELEASE_NAME}"
                     echo "Namespace: ${params.NAMESPACE}"
                     
                     // Deploy the Helm chart with the provided parameters
                     sh """
-                    helm upgrade --install ${params.RELEASE_NAME}-v${params.TAG} \
+                    helm upgrade --install ${params.NEW_RELEASE_NAME}-v${params.TAG} \
                                  ${params.CHART_PATH} \
                                  --namespace ${params.NAMESPACE} \
                                  --set image.tag=${params.TAG} \
