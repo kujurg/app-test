@@ -11,7 +11,7 @@ pipeline {
 
     stages {
 
-        stage('Connect to the cluster') {
+        stage('Connection to the cluster') {
             steps {
                 sh 'gcloud container clusters get-credentials webapp --zone us-central1-a --project deeplearning-390607'
             }
@@ -29,7 +29,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                    helm status ${params.RELEASE_NAME}-${params.TAG} | grep 'NAME:' | cut -d " " -f2 > old_revision
+                    helm status ${params.RELEASE_NAME}-v | grep 'NAME:' | cut -d " " -f2 > old_revision
                     """
                 }
             }
@@ -44,7 +44,7 @@ pipeline {
                     
                     // Deploy the Helm chart with the provided parameters
                     sh """
-                    helm upgrade --install ${params.RELEASE_NAME}-${params.TAG} \
+                    helm upgrade --install ${params.RELEASE_NAME}-v${params.TAG} \
                                  ${params.CHART_PATH} \
                                  --namespace ${params.NAMESPACE} \
                                  --set image.tag=${params.TAG} \
