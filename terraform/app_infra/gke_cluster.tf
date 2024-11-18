@@ -1,11 +1,11 @@
-data "google_compute_network" "my-network" {
-  name = var.base_vpc_network
-}
+# data "google_compute_network" "my-network" {
+#   name = var.base_vpc_network
+# }
 
-data "google_compute_subnetwork" "my-subnetwork" {
-  name   = var.base_vpv_subnetwork
-  region = var.region
-}
+# data "google_compute_subnetwork" "my-subnetwork" {
+#   name   = var.base_vpv_subnetwork
+#   region = var.region
+# }
 
 resource "google_container_cluster" "webapp" {
   name = var.cluster_name
@@ -32,6 +32,6 @@ resource "google_container_cluster" "webapp" {
     master_ipv4_cidr_block = "10.13.0.0/28"
   }
 
-  network = data.google_compute_network.my-network.name
-  subnetwork = data.google_compute_network.my-subnetwork.name
+  network = var.base_vpc_network
+  subnetwork = var.base_vpv_subnetwork
 }
