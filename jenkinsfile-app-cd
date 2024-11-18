@@ -4,7 +4,7 @@ pipeline {
     parameters {
         string(name: 'TAG', , defaultValue: '1.0.0', description: 'please enter the tag in following format 1.0.0')
         string(name: 'RELEASE_NAME', defaultValue: 'webapp', description: 'Helm release name')
-        // string(name: 'OLD_RELEASE_NAME', defaultValue: 'NEW_DEPLOYMENT', description: 'previous release')
+        booleanParam(name: 'INITIAL',defaultValue: false, description: 'Is this intial deployment')
         string(name: 'CHART_PATH', defaultValue: './webapp_chart', description: 'Path or name of Helm chart')
         string(name: 'NAMESPACE', defaultValue: 'default', description: 'Kubernetes namespace')
     }
@@ -21,6 +21,17 @@ pipeline {
                 sh 'helm version'
             }
         }
+                     
+        stage('check if initial Deployment') {
+            when {
+                expression { params.INITIAL == false }
+            }
+            steps {
+                script {
+                    sh "helm status webapp | grep "NAME:" | cut -d " " -f2 > old_revision"
+                }
+            }
+        }
 
         stage('Deploy Helm Chart') {
             steps {
@@ -28,10 +39,10 @@ pipeline {
                     echo "Deploying Helm chart: ${params.CHART_PATH}"
                     echo "Using release name: ${params.RELEASE_NAME}"
                     echo "Namespace: ${params.NAMESPACE}"
-
+                    
                     // Deploy the Helm chart with the provided parameters
                     sh """
-                    helm upgrade --install ${params.RELEASE_NAME} \
+                    helm upgrade --install ${params.RELEASE_NAME}-${params.TAG} \
                                  ${params.CHART_PATH} \
                                  --namespace ${params.NAMESPACE} \
                                  --set image.tag=${params.TAG} \
@@ -52,16 +63,17 @@ pipeline {
         }
 
 
-        // stage('Patch the green deployment') {
-        //     steps {
-        //         script {
-        //               sh """
-        //               kubectl patch service green -p '{"spec":{"selector":{"app": "${params.TAG}"}}}'
-        //               sleep 5
-        //             """
-        //         }
-        //     }
-        // }
+        stage('Patch the green deployment') {
+            steps {
+                script {
+                      sh """
+                      kubectl apply -f ./webapp_chart/green.yaml
+                      kubectl patch service green -p '{"spec":{"selector":{"app": "${params.TAG}"}}}'
+                      sleep 5
+                    """
+                }
+            }
+        }
 
         // stage(' Test the green deployment') {
         //     steps {
@@ -74,17 +86,19 @@ pipeline {
         //     }
         // }
 
-        // stage(' Making it blue  deployment') {
-        //     steps {
-        //         script {
-        //               sh """
-        //               kubectl patch service blue -p '{"spec":{"selector":{"app": "${params.TAG}"}}}'
-        //               sleep 5
-
-        //             """
-        //         }
-        //     }
-        // }
+        stage(' Path the blue deployment') {
+             when {
+                expression { params.INITIAL == false }
+                 }
+            steps {
+                script {
+                      sh """
+                        kubectl patch service blue -p '{"spec":{"selector":{"app": "${params.TAG}"}}}'
+                        sleep 5
+                    """
+                }
+            }
+        }
 
         //  stage(' Test the blue deployment') {
         //     steps {
@@ -97,31 +111,29 @@ pipeline {
         //     }
         // }
 
-        //     stage('Patch the green deployment back') {
-        //     steps {
-        //         script {
-        //               sh """
-        //               kubectl patch service green -p '{"spec":{"selector":{"app": "green"}}}'
-        //               sleep 5
-                    
+            stage('Patch the green deployment back') {
+            steps {
+                script {
+                      sh """
+                      kubectl patch service green -p '{"spec":{"selector":{"app": "green"}}}'
+                      sleep 5
+                    """
+                }
+            }
+        }
 
-        //             """
-        //         }
-        //     }
-        // }
-
-        // stage(' Remove the old deployment') {
-        //      when {
-        //  expression { params.OLD_RELEASE_NAME != 'NEW_DEPLOYMENT' }
-        //          }
-        //     steps {
-        //         script {
-        //               sh """
-        //               helm uninstall ${params.OLD_RELEASE_NAME}
-        //             """
-        //         }
-        //     }
-        // }
+        stage(' Remove the old deployment') {
+             when {
+                expression { params.INITIAL == false }
+                 }
+            steps {
+                script {
+                      sh """
+                      helm uninstall $(echo old_revision)
+                    """
+                }
+            }
+        }
     }
 
     post {
