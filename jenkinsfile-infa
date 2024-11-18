@@ -30,7 +30,7 @@ pipeline {
                 script {
                     // Validate Terraform configuration
                     dir(TF_WORKING_DIR) {
-                        sh 'terraform validate'
+                        sh 'terraform validate --var-file=${TF_VALUES}'
                     }
                 }
             }
