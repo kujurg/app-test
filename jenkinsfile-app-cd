@@ -13,7 +13,7 @@ pipeline {
 
         stage('Connect to the cluster') {
             steps {
-                sh 'gcloud container clusters get-credentials detection-workloads --zone us-central1-a --project deeplearning-390607'
+                sh 'gcloud container clusters get-credentials webapp --zone us-central1-a --project deeplearning-390607'
             }
         }
         stage('Helm Version Check') {
