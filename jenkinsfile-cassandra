@@ -9,9 +9,7 @@ git
     stages {
         stage('Initialize') {
             steps {
-            steps {
                 sh 'gcloud container clusters get-credentials ${GKE_CLUSTER} --zone us-central1-a --project ${PROJECT}'
-            }
             }
         }
 
