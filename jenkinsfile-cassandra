@@ -1,0 +1,28 @@
+pipeline {
+    agent any
+
+    environment {
+        //cassandra deployment directory
+        WORKING_DIR = './cassandra'
+    }
+
+    stages {
+        stage('Deploy') {
+            steps {
+                script {
+                    dir(TF_WORKING_DIR) {
+                        sh 'kubectl apply -f .'
+                    }
+                }
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Operation succeeded!'
+        }
+        failure {
+            echo 'Operation failed!'
+        }
+    }
+}
