@@ -4,6 +4,11 @@ resource "google_container_node_pool" "primary_nodepool" {
   cluster = google_container_cluster.webapp.name
   node_count = var.primary_node_count
 
+  autoscaling {
+    min_node_count = 1
+    max_node_count = 2
+  }
+
   node_config {
     machine_type = var.primary_nodepool_machine_type
     disk_size_gb = var.disk_size_gb
