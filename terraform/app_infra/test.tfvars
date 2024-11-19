@@ -6,3 +6,4 @@ secondary_nodepool_machine_type = "e2-medium"
 primary_node_count = 1
 secondary_node_count = 2
 cluster_name = "demo-cluster"
+
