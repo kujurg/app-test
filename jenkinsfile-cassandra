@@ -5,7 +5,6 @@ pipeline {
         //cassandra deployment directory
         WORKING_DIR = './cassandra'
     }
-git 
     stages {
         stage('Initialize') {
             steps {
