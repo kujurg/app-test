@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: canary-deployment
+  labels:
+    app: canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: canary
+  template:
+    metadata:
+      labels:
+        app: myapp
+        version: v2
+    spec:
+      containers:
+      - name: canary
+        image: us-central1-docker.pkg.dev/deeplearning-390607/webapp/app:2.0.0
+        ports: 
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: canary-service
+spec:
+  selector:
+    app: canary
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+  type: ClusterIP
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: canary-ingress
+#   annotations:
+#     nginx.ingress.kubernetes.io/canary: \"true\"
+#     nginx.ingress.kubernetes.io/canary-weight: \"50\"
+# spec:
+#   ingressClassName: gce
+#   rules:
+#   - host: nginx.example.com        # Replace with your domain name
+#     http:
+#       paths:
+#       - path: /
+#         pathType: Prefix
+#         backend:
+#           service:
+#             name: canary-service
+#             port:
+#               number: 80
