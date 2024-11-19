@@ -10,7 +10,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    dir(TF_WORKING_DIR) {
+                    dir(WORKING_DIR) {
                         sh 'kubectl apply -f .'
                     }
                 }
