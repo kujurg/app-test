@@ -12,8 +12,4 @@ resource "google_artifact_registry_repository_iam_binding" "gke" {
 
   members = [
     "serviceAccount:${google_service_account.gke.email}"
-  ]
-   depends_on = [
-    azurerm_storage_account.st
- ]
 }
