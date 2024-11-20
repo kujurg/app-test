@@ -41,7 +41,9 @@ pipeline {
                                  --set image.tag=${params.TAG} \
                                  --wait
                     kubectl apply -f ./webapp_chart/stable-service.yaml
+                    kubectl apply -f ./webapp_chart/canary-service.yaml
                     kubectl patch service stable-service -p '{"spec":{"selector":{"app": "${params.TAG}"}}}'
+                    kubectl patch service canary-service -p '{"spec":{"selector":{"app": "${params.TAG}"}}}'
                     kubectl apply -f ./webapp_chart/gateway.yaml
                     kubectl apply -f ./webapp_chart/httproute.yaml
                     """
