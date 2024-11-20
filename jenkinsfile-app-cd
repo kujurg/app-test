@@ -3,15 +3,20 @@ pipeline {
 
     parameters {
         string(name: 'TAG', , defaultValue: '1.0.0', description: 'please enter the tag in following format 1.0.0')
-        string(name: 'NEW_RELEASE_NAME', defaultValue: 'webapp', description: 'Helm release name')
-        string(name: 'OLD_RELEASE_NAME', defaultValue: 'webapp', description: 'Helm release name')
+        // string(name: 'NEW_RELEASE_NAME', defaultValue: 'webapp', description: 'Helm release name')
+        // string(name: 'OLD_RELEASE_NAME', defaultValue: 'webapp', description: 'Helm release name')
         booleanParam(name: 'INITIAL',defaultValue: false, description: 'Is this intial deployment')
         string(name: 'CHART_PATH', defaultValue: './webapp_chart', description: 'Path or name of Helm chart')
         string(name: 'NAMESPACE', defaultValue: 'default', description: 'Kubernetes namespace')
+
+    }
+
+    environment {
+        STABLE_WEIGHT = 90
+        CANARY_WEIGHT = 10
     }
 
     stages {
-
         stage('Establish connection to the cluster') {
             steps {
                 sh 'gcloud container clusters get-credentials webapp --zone us-central1-a --project deeplearning-390607'
@@ -25,6 +30,9 @@ pipeline {
                      
 
         stage('Deploy Helm Chart') {
+                when {
+                        expression { params.INITIAL == true }
+                    }
             steps {
                 script {
                     echo "Deploying Helm chart: ${params.CHART_PATH}"
@@ -38,11 +46,37 @@ pipeline {
                                  --namespace ${params.NAMESPACE} \
                                  --set image.tag=${params.TAG} \
                                  --wait
+                    kubectl apply -f ./webapp_chart/stable-service.yaml
+                    kubectl patch service stable-service -p '{"spec":{"selector":{"app": "${params.TAG}"}}}'
+                    kubectl apply -f ./webapp_chart/gateway.yaml.yaml
+                    kubectl apply -f ./webapp_chart/httproute.yaml.yaml
                     """
                 }
             }
         }
 
+        stage('Deploy Canary helm Chart') {
+                when {
+                        expression { params.INITIAL == false }
+                    }
+            steps {
+                script {
+                    echo "Deploying Canary Helm chart: ${params.CHART_PATH}"
+                    echo "Using release name: ${params.NEW_RELEASE_NAME}"
+                    echo "Namespace: ${params.NAMESPACE}"
+                    
+                    // Deploy the Helm chart with the provided parameters
+                    sh """
+                    helm upgrade --install canary-${params.NEW_RELEASE_NAME} \
+                                 ${params.CHART_PATH} \
+                                 --namespace ${params.NAMESPACE} \
+                                 --set image.tag=${params.TAG} \
+                                 --wait
+                    """
+                }
+            }
+        }
+        
         stage('Verify Deployment') {
             steps {
                 script {
@@ -53,98 +87,117 @@ pipeline {
             }
         }
 
-
-        stage('Patch the green deployment') {
+        stage('upgrade the canary deployment by 10%') {
+            when {
+                    expression { params.INITIAL == false }
+                }
             steps {
                 script {
-                      sh """
-                      kubectl apply -f ./webapp_chart/green.yaml
-                      kubectl patch service green -p '{"spec":{"selector":{"app": "${params.TAG}"}}}'
-                      sleep 5
-                    """
+                        // write the logic for canary deployment
+                        echo "upgrade the canary deployment by 10%"
                 }
             }
         }
 
         stage(' Test the green deployment') {
-            steps {
-                script {
-                    sh """
-                    kubectl exec svc/green -- curl --silent --show-error --fail localhost:5000
-                    sleep 5 
-                    """
-                }
-            }
-        }
-
-        stage(' Create the blue deployment') {
-             when {
-                expression { params.INITIAL == true }
-                 }
-            steps {
-                script {
-                      sh """
-                        kubectl apply -f ./webapp_chart/blue.yaml
-                        sleep 5
-                    """
-                }
-            }
-        }
-        stage('Input: Upgrade or Rollback') {
-
-            steps {
-                script {
-                    // Ask the user for input (Deploy or Rollback)
-                    def userInput = input(id: 'UserInput', message: 'Do you want to Upgrade or Rollback?', parameters: [
-                            choice(
-                                name: 'ACTION', 
-                                choices: ['Upgrade', 'Rollback'], 
-                                description: 'Choose whether to Upgrade or rollback the changes.'
-                            )
-                        ]
-                    )
-
-                    // Store the user's choice for later use
-                    // env.ACTION = userInput.ACTION
-                    
-                }
-            }
-        }
-        stage(' Path the blue deployment') {
-             when {
+            when {
                 expression { params.INITIAL == false }
-                 }
+            }
             steps {
                 script {
-                      sh """
-                        kubectl patch service blue -p '{"spec":{"selector":{"app": "${params.TAG}"}}}'
-                        sleep 5
-                    """
+                    // test the deployment 
+                    echo "pass"
                 }
             }
         }
 
-         stage(' Test the blue deployment') {
+        stage('upgrade the canary deployment by 50%') {
+            when {
+                expression { params.INITIAL == false }
+            }
             steps {
                 script {
-                    sh """
-                        kubectl exec svc/blue -- curl --silent --show-error --fail localhost:5000
-                        sleep 1
-                    """
+                    // write the logic for canary deployment
+                    echo "pass"
                 }
             }
         }
 
-            stage('Patch the green deployment back') {
+        stage(' Test the green deployment') {
+            when {
+                expression { params.INITIAL == false }
+            }
             steps {
                 script {
-                      sh """
-                      kubectl patch service green -p '{"spec":{"selector":{"app": "green"}}}'
-                      sleep 5
-                    """
+                    // test the deployment 
+                    echo "pass"
                 }
             }
         }
+        stage('upgrade the canary deployment by 75%') {
+            when {
+                expression { params.INITIAL == false }
+            }
+            steps {
+                script {
+                    // write the logic for canary deployment
+                    echo "pass"
+                }
+            }
+        }
+
+        stage(' Test the green deployment') {
+            when {
+                expression { params.INITIAL == false }
+            }
+            steps {
+                script {
+                    // test the deployment 
+                    echo "pass"
+                }
+            }
+        }
+        stage('upgrade the canary deployment by 100%') {
+            when {
+                expression { params.INITIAL == false }
+            }
+            steps {
+                script {
+                    // write the logic for canary deployment
+                    echo "pass"
+                }
+            }
+        }
+
+        stage(' Test the green deployment') {
+            when {
+                expression { params.INITIAL == false }
+            }
+            steps {
+                script {
+                    // test the deployment 
+                    echo "pass"
+                }
+            }
+        }
+        // stage('Input: Upgrade or Rollback') {
+
+        //     steps {
+        //         script {
+        //             def userInput = input(id: 'UserInput', message: 'Do you want to Upgrade or Rollback?', parameters: [
+        //                     choice(
+        //                         name: 'ACTION', 
+        //                         choices: ['Upgrade', 'Rollback'], 
+        //                         description: 'Choose whether to Upgrade or rollback the changes.'
+        //                     )
+        //                 ]
+        //             )
+
+        //             // Store the user's choice for later use
+        //             env.CHOICE = userInput.ACTION
+        //         }
+        //     }
+        // }
 
         stage(' Remove the old deployment') {
              when {
@@ -153,7 +206,8 @@ pipeline {
             steps {
                 script {
                       sh """
-                      helm uninstall $OLD_RELEASE_NAME
+                      echo "pass"
+                    //   helm uninstall $OLD_RELEASE_NAME
                     """
                 }
             }

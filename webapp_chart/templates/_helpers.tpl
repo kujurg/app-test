@@ -4,5 +4,5 @@
 {{- end }}
 
 {{- define "webapp_chart.fullname" -}}
-{{ .Release.Name }}-{{ default "webapp_chart" . }}
+{{ .Release.Name }}
 {{- end }}
