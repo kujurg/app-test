@@ -137,6 +137,7 @@ pipeline {
                         ]
                     )
                     env.INPUT="${userInput}"
+                }
             }
         }
 
@@ -349,8 +350,8 @@ pipeline {
                     sh """
                     helm uninstall $OLD_RELEASE_NAME
                     """
+                    }
                 }
-            }
         }
     }
 
