@@ -19,15 +19,9 @@ pipeline {
     stages {
         stage('Establish connection to the cluster') {
             steps {
-                sh 'gcloud container clusters get-credentials webapp --zone us-central1-a --project deeplearning-390607'
+                sh 'gcloud container clusters get-credentials ${GKE_CLUSTER} --zone us-central1-a --project ${PROJECT}'
             }
         }
-        stage('Helm Version Check') {
-            steps {
-                sh 'helm version'
-            }
-        }
-                     
 
         stage('Deploy Helm Chart') {
                 when {
@@ -38,9 +32,9 @@ pipeline {
                     echo "Deploying Helm chart: ${params.CHART_PATH}"
                     echo "Using release name: ${params.NEW_RELEASE_NAME}"
                     echo "Namespace: ${params.NAMESPACE}"
-                    
                     // Deploy the Helm chart with the provided parameters
                     sh """
+                    helm version
                     helm upgrade --install ${params.NEW_RELEASE_NAME} \
                                  ${params.CHART_PATH} \
                                  --namespace ${params.NAMESPACE} \
