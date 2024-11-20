@@ -1,11 +1,21 @@
+# apiVersion: storage.k8s.io/v1
+# kind: StorageClass
+# metadata:
+#   name: fast
+# provisioner: kubernetes.io/gce-pd
+# allowVolumeExpansion: true
+# reclaimPolicy: Delete
+# parameters:
+#   type: pd-standard
+#   fstype: ext4
+#   replication-type: none
+---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: fast
-provisioner: kubernetes.io/gce-pd
-allowVolumeExpansion: true
+provisioner: pd.csi.storage.gke.io
 reclaimPolicy: Delete
 parameters:
-  type: pd-standard
-  fstype: ext4
-  replication-type: none
+  type: pd-ssd
+
