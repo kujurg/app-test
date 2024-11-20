@@ -23,7 +23,7 @@ pipeline {
             }
         }
 
-        stage('Deploy Helm Chart') {
+        stage(' Initial Deployment') {
                 when {
                         expression { params.INITIAL == true }
                     }
@@ -92,6 +92,7 @@ pipeline {
                         // write the logic for canary deployment
                         sh """
                         kubectl patch service canary-service -p '{"spec":{"selector":{"app": "${params.TAG}"}}}'
+                        sleep 5
                         kubectl patch httproute route-http \
                                         -n default \
                                         --type='json' \
@@ -117,7 +118,7 @@ pipeline {
             steps {
                 script {
                     // test the deployment 
-                    def userInput = input(id: 'UserInput', message: 'Canary deployment with 10%. Do you want to Upgrade or Rollback', parameters: [
+                    def userInput = input(id: 'UserInput', message: 'Canary deployment updated by 10%. Do you want to Upgrade or Rollback', parameters: [
                             choice(
                                 name: 'ACTION', 
                                 choices: ['Upgrade', 'Rollback'], 
@@ -161,7 +162,7 @@ pipeline {
             steps {
                 script {
                     // test the deployment 
-                    def userInput = input(id: 'UserInput', message: 'Canary deployment with 50%. Do you want to Upgrade or Rollback', parameters: [
+                    def userInput = input(id: 'UserInput', message: 'Canary deployment updated by 50%. Do you want to Upgrade or Rollback', parameters: [
                             choice(
                                 name: 'ACTION', 
                                 choices: ['Upgrade', 'Rollback'], 
@@ -204,7 +205,7 @@ pipeline {
             steps {
                 script {
                     // test the deployment 
-                    def userInput = input(id: 'UserInput', message: 'Canary deployment with 75%. Do you want to Upgrade or Rollback', parameters: [
+                    def userInput = input(id: 'UserInput', message: 'Canary deployment updated by 75%. Do you want to Upgrade or Rollback', parameters: [
                             choice(
                                 name: 'ACTION', 
                                 choices: ['Upgrade', 'Rollback'], 
@@ -247,7 +248,7 @@ pipeline {
             steps {
                 script {
                     // test the deployment 
-                    def userInput = input(id: 'UserInput', message: 'Canary deployment with 75%. Do you want to Upgrade or Rollback', parameters: [
+                    def userInput = input(id: 'UserInput', message: 'Canary deployment updated by 100%. Do you want to Upgrade or Rollback', parameters: [
                             choice(
                                 name: 'ACTION', 
                                 choices: ['Upgrade', 'Rollback'], 
@@ -267,6 +268,20 @@ pipeline {
                 script {
                     sh """
                     kubectl patch service stable-service -p '{"spec":{"selector":{"app": "${params.TAG}"}}}'
+                    sleep 5
+                    kubectl patch httproute route-http \
+                        -n default \
+                        --type='json' \
+                        -p='[{
+                            "op": "replace",
+                            "path": "/spec/rules/0/backendRefs/0/weight",
+                            "value": 1
+                        },
+                        {
+                            "op": "replace",
+                            "path": "/spec/rules/0/backendRefs/1/weight",
+                            "value": 0
+                        }]'
                     """
                 }
             }
