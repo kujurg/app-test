@@ -136,13 +136,14 @@ pipeline {
                             )
                         ]
                     )
+                    echo "${userInput} - ${}"
                 }
             }
         }
 
         stage('upgrade the traffic to canary deployment by 50%') {
             when {
-                expression { params.INITIAL == false }
+                expression { params.INITIAL == false && ${userInput} == "Upgrade" }
             }
             steps {
                 script {
@@ -170,7 +171,7 @@ pipeline {
 
         stage(' Test the Canary deployment at 50%') {
             when {
-                expression { params.INITIAL == false }
+                expression { params.INITIAL == false && ${userInput} == "Upgrade" }
             }
             steps {
                 script {
@@ -188,7 +189,7 @@ pipeline {
         }
         stage('upgrade the traffic to canary deployment by 75%') {
             when {
-                expression { params.INITIAL == false }
+                expression { params.INITIAL == false && ${userInput} == "Upgrade" }
             }
             steps {
                 script {
@@ -215,7 +216,7 @@ pipeline {
 
         stage(' Test the canary deployment at 75%') {
             when {
-                expression { params.INITIAL == false }
+                expression { params.INITIAL == false && ${userInput} == "Upgrade" }
             }
             steps {
                 script {
@@ -233,7 +234,7 @@ pipeline {
         }
         stage('upgrade the traffic to canary deployment by 100%') {
             when {
-                expression { params.INITIAL == false }
+                expression { params.INITIAL == false && ${userInput} == "Upgrade" }
             }
             steps {
                 script {
@@ -260,7 +261,7 @@ pipeline {
 
         stage(' Test the canary deployment at 100%') {
             when {
-                expression { params.INITIAL == false }
+                expression { params.INITIAL == false && ${userInput} == "Upgrade" }
             }
             steps {
                 script {
@@ -277,9 +278,40 @@ pipeline {
             }
         }
 
+        stage(' Rollback') {
+            when {
+                expression { params.INITIAL == false && ${userInput} == "Rollback" }
+            }
+            steps {
+                script {
+                    sh '''
+                    set +x
+                    kubectl patch httproute route-http \
+                        -n default \
+                        --type='json' \
+                        -p='[{
+                            "op": "replace",
+                            "path": "/spec/rules/0/backendRefs/0/weight",
+                            "value": 100
+                        },
+                        {
+                            "op": "replace",
+                            "path": "/spec/rules/0/backendRefs/1/weight",
+                            "value": 0
+                        }]'
+                    STABLE_VER=$(kubectl describe svc stable-service | grep 'Selector:' | awk '{print $2}' | cut -d'=' -f2)
+                    kubectl patch service canary-service -p '{"spec":{"selector":{"app": "${STABLE_VER}"}}}'
+                    helm uninstall canary-${params.NEW_RELEASE_NAME}
+                    sleep 5
+                    set -x
+                    '''
+                }
+            }
+        }
+
         stage('Upgrade the deployment to canary version') {
             when {
-                expression { params.INITIAL == false }
+                expression { params.INITIAL == false && ${userInput} == "Upgrade" }
             }
             steps {
                 script {
@@ -308,7 +340,7 @@ pipeline {
 
         stage(' Remove the old deployment') {
              when {
-                expression { params.INITIAL == false }
+                expression { params.INITIAL == false && ${userInput} == "Upgrade" }
                  }
             steps {
                 script {
