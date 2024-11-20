@@ -136,14 +136,13 @@ pipeline {
                             )
                         ]
                     )
-                    echo "${userInput} - ${}"
-                }
+                    env.INPUT="${userInput}"
             }
         }
 
         stage('upgrade the traffic to canary deployment by 50%') {
             when {
-                expression { params.INITIAL == false && ${userInput} == "Upgrade" }
+                expression { params.INITIAL == false && "${env.INPUT}" == "Upgrade" }
             }
             steps {
                 script {
@@ -171,7 +170,7 @@ pipeline {
 
         stage(' Test the Canary deployment at 50%') {
             when {
-                expression { params.INITIAL == false && ${userInput} == "Upgrade" }
+                expression { params.INITIAL == false && "${env.INPUT}" == "Upgrade" }
             }
             steps {
                 script {
@@ -184,12 +183,13 @@ pipeline {
                             )
                         ]
                     )
+                    env.INPUT="${userInput}"
                 }
             }
         }
         stage('upgrade the traffic to canary deployment by 75%') {
             when {
-                expression { params.INITIAL == false && ${userInput} == "Upgrade" }
+                expression { params.INITIAL == false && "${env.INPUT}" == "Upgrade" }
             }
             steps {
                 script {
@@ -216,7 +216,7 @@ pipeline {
 
         stage(' Test the canary deployment at 75%') {
             when {
-                expression { params.INITIAL == false && ${userInput} == "Upgrade" }
+                expression { params.INITIAL == false && "${env.INPUT}" == "Upgrade" }
             }
             steps {
                 script {
@@ -229,12 +229,13 @@ pipeline {
                             )
                         ]
                     )
+                    env.INPUT="${userInput}"
                 }
             }
         }
         stage('upgrade the traffic to canary deployment by 100%') {
             when {
-                expression { params.INITIAL == false && ${userInput} == "Upgrade" }
+                expression { params.INITIAL == false && "${env.INPUT}" == "Upgrade" }
             }
             steps {
                 script {
@@ -261,7 +262,7 @@ pipeline {
 
         stage(' Test the canary deployment at 100%') {
             when {
-                expression { params.INITIAL == false && ${userInput} == "Upgrade" }
+                expression { params.INITIAL == false && "${env.INPUT}" == "Upgrade" }
             }
             steps {
                 script {
@@ -274,13 +275,14 @@ pipeline {
                             )
                         ]
                     )
+                    env.INPUT="${userInput}"
                 }
             }
         }
 
         stage(' Rollback') {
             when {
-                expression { params.INITIAL == false && ${userInput} == "Rollback" }
+                expression { params.INITIAL == false && "${env.INPUT}" == "Rollback" }
             }
             steps {
                 script {
@@ -311,7 +313,7 @@ pipeline {
 
         stage('Upgrade the deployment to canary version') {
             when {
-                expression { params.INITIAL == false && ${userInput} == "Upgrade" }
+                expression { params.INITIAL == false && "${env.INPUT}" == "Upgrade" }
             }
             steps {
                 script {
@@ -340,7 +342,7 @@ pipeline {
 
         stage(' Remove the old deployment') {
              when {
-                expression { params.INITIAL == false && ${userInput} == "Upgrade" }
+                expression { params.INITIAL == false && "${env.INPUT}" == "Upgrade" }
                  }
             steps {
                 script {
