@@ -42,8 +42,8 @@ pipeline {
                                  --wait
                     kubectl apply -f ./webapp_chart/stable-service.yaml
                     kubectl patch service stable-service -p '{"spec":{"selector":{"app": "${params.TAG}"}}}'
-                    kubectl apply -f ./webapp_chart/gateway.yaml.yaml
-                    kubectl apply -f ./webapp_chart/httproute.yaml.yaml
+                    kubectl apply -f ./webapp_chart/gateway.yaml
+                    kubectl apply -f ./webapp_chart/httproute.yaml
                     """
                 }
             }
