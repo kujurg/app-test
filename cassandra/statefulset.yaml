@@ -71,7 +71,7 @@ spec:
             - -c
             - /ready-probe.sh
           initialDelaySeconds: 15
-          timeoutSeconds: 5
+          timeoutSeconds: 10
         volumeMounts:
         - name: cassandra-data
           mountPath: /cassandra_data
@@ -83,5 +83,5 @@ spec:
       storageClassName: fast
       resources:
         requests:
-          storage: 2Gi
+          storage: 1Gi
 
