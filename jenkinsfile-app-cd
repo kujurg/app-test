@@ -90,7 +90,22 @@ pipeline {
             steps {
                 script {
                         // write the logic for canary deployment
-                        echo "upgrade the canary deployment by 10%"
+                        sh """
+                        kubectl patch service canary-service -p '{"spec":{"selector":{"app": "${params.TAG}"}}}'
+                        kubectl patch httproute route-http \
+                                        -n default \
+                                        --type='json' \
+                                        -p='[{
+                                            "op": "replace",
+                                            "path": "/spec/rules/0/backendRefs/0/weight",
+                                            "value": ${STABLE_WEIGHT}
+                                        },
+                                        {
+                                            "op": "replace",
+                                            "path": "/spec/rules/0/backendRefs/1/weight",
+                                            "value": ${CANARY_WEIGHT}
+                                        }]'
+                        """
                 }
             }
         }
@@ -102,7 +117,14 @@ pipeline {
             steps {
                 script {
                     // test the deployment 
-                    echo "pass"
+                    def userInput = input(id: 'UserInput', message: 'Canary deployment with 10%. Do you want to Upgrade or Rollback', parameters: [
+                            choice(
+                                name: 'ACTION', 
+                                choices: ['Upgrade', 'Rollback'], 
+                                description: 'Choose whether to Upgrade or rollback the changes.'
+                            )
+                        ]
+                    )
                 }
             }
         }
@@ -113,20 +135,40 @@ pipeline {
             }
             steps {
                 script {
-                    // write the logic for canary deployment
-                    echo "pass"
+                    sh """
+                    kubectl patch httproute route-http \
+                        -n default \
+                        --type='json' \
+                        -p='[{
+                            "op": "replace",
+                            "path": "/spec/rules/0/backendRefs/0/weight",
+                            "value": 50
+                        },
+                        {
+                            "op": "replace",
+                            "path": "/spec/rules/0/backendRefs/1/weight",
+                            "value": 50
+                        }]'
+                    """
                 }
             }
         }
 
-        stage(' Test the deployment') {
+        stage(' Test the Canary deployment at 50%') {
             when {
                 expression { params.INITIAL == false }
             }
             steps {
                 script {
                     // test the deployment 
-                    echo "pass"
+                    def userInput = input(id: 'UserInput', message: 'Canary deployment with 50%. Do you want to Upgrade or Rollback', parameters: [
+                            choice(
+                                name: 'ACTION', 
+                                choices: ['Upgrade', 'Rollback'], 
+                                description: 'Choose whether to Upgrade or rollback the changes.'
+                            )
+                        ]
+                    )
                 }
             }
         }
@@ -136,20 +178,40 @@ pipeline {
             }
             steps {
                 script {
-                    // write the logic for canary deployment
-                    echo "pass"
+                    sh """
+                    kubectl patch httproute route-http \
+                        -n default \
+                        --type='json' \
+                        -p='[{
+                            "op": "replace",
+                            "path": "/spec/rules/0/backendRefs/0/weight",
+                            "value": 25
+                        },
+                        {
+                            "op": "replace",
+                            "path": "/spec/rules/0/backendRefs/1/weight",
+                            "value": 75
+                        }]'
+                    """
                 }
             }
         }
 
-        stage(' Test the canary deployment') {
+        stage(' Test the canary deployment at 75%') {
             when {
                 expression { params.INITIAL == false }
             }
             steps {
                 script {
                     // test the deployment 
-                    echo "pass"
+                    def userInput = input(id: 'UserInput', message: 'Canary deployment with 75%. Do you want to Upgrade or Rollback', parameters: [
+                            choice(
+                                name: 'ACTION', 
+                                choices: ['Upgrade', 'Rollback'], 
+                                description: 'Choose whether to Upgrade or rollback the changes.'
+                            )
+                        ]
+                    )
                 }
             }
         }
@@ -159,8 +221,21 @@ pipeline {
             }
             steps {
                 script {
-                    // write the logic for canary deployment
-                    echo "pass"
+                    sh """
+                    kubectl patch httproute route-http \
+                        -n default \
+                        --type='json' \
+                        -p='[{
+                            "op": "replace",
+                            "path": "/spec/rules/0/backendRefs/0/weight",
+                            "value": 0
+                        },
+                        {
+                            "op": "replace",
+                            "path": "/spec/rules/0/backendRefs/1/weight",
+                            "value": 1
+                        }]'
+                    """
                 }
             }
         }
@@ -172,28 +247,30 @@ pipeline {
             steps {
                 script {
                     // test the deployment 
-                    echo "pass"
+                    def userInput = input(id: 'UserInput', message: 'Canary deployment with 75%. Do you want to Upgrade or Rollback', parameters: [
+                            choice(
+                                name: 'ACTION', 
+                                choices: ['Upgrade', 'Rollback'], 
+                                description: 'Choose whether to Upgrade or rollback the changes.'
+                            )
+                        ]
+                    )
                 }
             }
         }
-        // stage('Input: Upgrade or Rollback') {
 
-        //     steps {
-        //         script {
-        //             def userInput = input(id: 'UserInput', message: 'Do you want to Upgrade or Rollback?', parameters: [
-        //                     choice(
-        //                         name: 'ACTION', 
-        //                         choices: ['Upgrade', 'Rollback'], 
-        //                         description: 'Choose whether to Upgrade or rollback the changes.'
-        //                     )
-        //                 ]
-        //             )
-
-        //             // Store the user's choice for later use
-        //             env.CHOICE = userInput.ACTION
-        //         }
-        //     }
-        // }
+        stage('Upgrade the deployment to canary version') {
+            when {
+                expression { params.INITIAL == false }
+            }
+            steps {
+                script {
+                    sh """
+                    kubectl patch service stable-service -p '{"spec":{"selector":{"app": "${params.TAG}"}}}'
+                    """
+                }
+            }
+        }
 
         stage(' Remove the old deployment') {
              when {
@@ -201,9 +278,8 @@ pipeline {
                  }
             steps {
                 script {
-                      sh """
-                      echo "pass"
-                    //   helm uninstall $OLD_RELEASE_NAME
+                    sh """
+                    helm uninstall $OLD_RELEASE_NAME
                     """
                 }
             }
