@@ -287,7 +287,12 @@ pipeline {
             }
             steps {
                 script {
-                    sh '''
+
+                    def STABLE_VER = sh(script: '''
+                    kubectl describe svc stable-service | grep 'Selector:' | awk '{print $2}' | cut -d'=' -f2
+                    ''',returnStdout: true).trim()
+
+                    sh """
                     set +x
                     kubectl patch httproute route-http \
                         -n default \
@@ -302,12 +307,11 @@ pipeline {
                             "path": "/spec/rules/0/backendRefs/1/weight",
                             "value": 0
                         }]'
-                    STABLE_VER=$(kubectl describe svc stable-service | grep 'Selector:' | awk '{print $2}' | cut -d'=' -f2)
                     kubectl patch service canary-service -p '{"spec":{"selector":{"app": "${STABLE_VER}"}}}'
                     helm uninstall canary-${params.NEW_RELEASE_NAME}
                     sleep 5
                     set -x
-                    '''
+                    """
                 }
             }
         }
