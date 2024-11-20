@@ -3,7 +3,7 @@ pipeline {
 
     parameters {
         string(name: 'TAG', , defaultValue: '1.0.0', description: 'please enter the tag in following format 1.0.0')
-        // string(name: 'NEW_RELEASE_NAME', defaultValue: 'webapp', description: 'Helm release name')
+        string(name: 'NEW_RELEASE_NAME', defaultValue: 'webapp', description: 'Helm release name')
         // string(name: 'OLD_RELEASE_NAME', defaultValue: 'webapp', description: 'Helm release name')
         booleanParam(name: 'INITIAL',defaultValue: false, description: 'Is this intial deployment')
         string(name: 'CHART_PATH', defaultValue: './webapp_chart', description: 'Path or name of Helm chart')
