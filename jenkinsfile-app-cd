@@ -36,7 +36,7 @@ pipeline {
                     echo "Deploying Helm chart: ${params.CHART_PATH}"
                     echo "Using release name: ${params.NEW_RELEASE_NAME}"
                     echo "Namespace: ${params.NAMESPACE}"
-                    // Deploy the Helm chart with the provided parameters
+                    // Deploy the initial release to the cluster 
                     sh """
                     set +x
                     helm version
@@ -67,7 +67,7 @@ pipeline {
                     echo "Using release name: ${params.NEW_RELEASE_NAME}"
                     echo "Namespace: ${params.NAMESPACE}"
                     
-                    // Deploy the Helm chart with the provided parameters
+                    // Deploy the canary release version with the provided parameters
                     sh """
                     set +x
                     helm upgrade --install canary-${params.NEW_RELEASE_NAME} \
@@ -97,7 +97,7 @@ pipeline {
                 }
             steps {
                 script {
-                        // write the logic for canary deployment
+                        // patch the http route to split traffic for canary deployment
                         sh """
                         set +x
                         kubectl patch service canary-service -p '{"spec":{"selector":{"app": "${params.TAG}"}}}'
@@ -147,6 +147,7 @@ pipeline {
             }
             steps {
                 script {
+                    // patch the http route to split traffic for canary deployment
                     sh """
                     set +x
                     kubectl patch httproute route-http \
@@ -194,6 +195,7 @@ pipeline {
             }
             steps {
                 script {
+                    // patch the http route to split traffic for canary deployment
                     sh """
                     set +x
                     kubectl patch httproute route-http \
@@ -240,6 +242,7 @@ pipeline {
             }
             steps {
                 script {
+                    // patch the http route to split traffic for canary deployment
                     sh """
                     set +x
                     kubectl patch httproute route-http \
@@ -288,6 +291,7 @@ pipeline {
             steps {
                 script {
 
+                    // Get the stable version and patch the http route for rollback to stable version
                     def STABLE_VER = sh(script: '''
                     kubectl describe svc stable-service | grep 'Selector:' | awk '{print $2}' | cut -d'=' -f2
                     ''',returnStdout: true).trim()
