@@ -12,7 +12,7 @@ spec:
     - backendRefs:
         - name: stable-service
           port: 80
-          weight: 1
+          weight: 100
         - name: canary-service
           port: 80
-          weight: 1
+          weight: 0
